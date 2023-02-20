@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const asyncHandler = require('express-async-handler')
 const User = require('../models/userModel')
-const e = require('express')
 
 // @desc    Register new user
 // @route   POST /api/users
@@ -15,7 +14,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error('Please add all fields')
   }
 
-  //check if user exists
+  // Check if user exists
   const userExists = await User.findOne({ email })
 
   if (userExists) {
@@ -23,11 +22,11 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error('User already exists')
   }
 
-  //Hash password
+  // Hash password
   const salt = await bcrypt.genSalt(10)
   const hashedPassword = await bcrypt.hash(password, salt)
 
-  //Create User
+  // Create user
   const user = await User.create({
     name,
     email,
@@ -53,6 +52,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body
 
+  // Check for user email
   const user = await User.findOne({ email })
 
   if (user && (await bcrypt.compare(password, user.password))) {
@@ -64,19 +64,18 @@ const loginUser = asyncHandler(async (req, res) => {
     })
   } else {
     res.status(400)
-    throw new Error('Invalid credetials')
+    throw new Error('Invalid credentials')
   }
-
-  res.json({ message: 'Login user' })
 })
+
 // @desc    Get user data
-// @route   POST /api/users/me
+// @route   GET /api/users/me
 // @access  Private
 const getMe = asyncHandler(async (req, res) => {
   res.status(200).json(req.user)
 })
 
-//generate JWT
+// Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
